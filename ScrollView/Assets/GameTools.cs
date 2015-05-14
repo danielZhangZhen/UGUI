@@ -1,4 +1,10 @@
-﻿using UnityEngine;
+﻿//-------------------------------
+//该Demo由风冻冰痕所写
+//http://icemark.cn/blog
+//转载请说明出处
+//-------------------------------
+using UnityEngine;
+
 public static class GameTools
 {
     static public GameObject AddChild(Transform parent, GameObject prefab)

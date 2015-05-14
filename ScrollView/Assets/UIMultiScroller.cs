@@ -6,30 +6,33 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class UIScroller : MonoBehaviour
+public class UIMultiScroller : MonoBehaviour
 {
     public enum Arrangement { Horizontal, Vertical, }
     public Arrangement _movement = Arrangement.Horizontal;
+    //单行或单列的Item数量
+    [Range(1, 20)]
+    public int maxPerLine = 5;
     //Item之间的距离
     [Range(0, 20)]
     public int cellPadiding = 5;
     //Item的宽高
     public int cellWidth = 500;
     public int cellHeight = 100;
-    //默认加载的Item个数，一般比可显示个数大2~3个
+    //默认加载的行数，一般比可显示行数大2~3行
     [Range(0, 20)]
     public int viewCount = 6;
     public GameObject itemPrefab;
     public RectTransform _content;
 
     private int _index = -1;
-    private List<UIScrollIndex> _itemList;
+    private List<UIMultiScrollIndex> _itemList;
     private int _dataCount;
 
     void Start()
     {
-        _itemList = new List<UIScrollIndex>();
-        DataCount = 100;
+        _itemList = new List<UIMultiScrollIndex>();
+        DataCount = 200;
         OnValueChange(Vector2.zero);
     }
 
@@ -41,19 +44,19 @@ public class UIScroller : MonoBehaviour
             _index = index;
             for (int i = _itemList.Count; i > 0; i--)
             {
-                UIScrollIndex item = _itemList[i - 1];
-                if (item.Index < index || (item.Index >= index + viewCount))
+                UIMultiScrollIndex item = _itemList[i - 1];
+                if (item.Index < index * maxPerLine || (item.Index >= (index + viewCount) * maxPerLine))
                 {
                     GameObject.Destroy(item.gameObject);
                     _itemList.Remove(item);
                 }
             }
-            for (int i = _index; i < _index + viewCount; i++)
+            for (int i = _index * maxPerLine; i < (_index + viewCount) * maxPerLine; i++)
             {
                 if (i < 0) continue;
                 if (i > _dataCount - 1) continue;
                 bool isOk = false;
-                foreach (UIScrollIndex item in _itemList)
+                foreach (UIMultiScrollIndex item in _itemList)
                 {
                     if (item.Index == i) isOk = true;
                 }
@@ -95,7 +98,7 @@ public class UIScroller : MonoBehaviour
     {
         for (int i = 0; i < _itemList.Count; i++)
         {
-            UIScrollIndex item = _itemList[i];
+            UIMultiScrollIndex item = _itemList[i];
             if (item.Index >= index) item.Index += 1;
         }
         CreateItem(index);
@@ -107,7 +110,7 @@ public class UIScroller : MonoBehaviour
         int minIndex = int.MaxValue;
         for (int i = _itemList.Count; i > 0; i--)
         {
-            UIScrollIndex item = _itemList[i - 1];
+            UIMultiScrollIndex item = _itemList[i - 1];
             if (item.Index == index)
             {
                 GameObject.Destroy(item.gameObject);
@@ -136,7 +139,7 @@ public class UIScroller : MonoBehaviour
     {
         GameObject go = GameTools.AddChild(_content, itemPrefab);
 
-        UIScrollIndex itemBase = go.GetComponent<UIScrollIndex>();
+        UIMultiScrollIndex itemBase = go.GetComponent<UIMultiScrollIndex>();
         itemBase.Scroller = this;
         itemBase.Index = index;
         _itemList.Add(itemBase);
@@ -159,9 +162,9 @@ public class UIScroller : MonoBehaviour
         switch (_movement)
         {
             case Arrangement.Horizontal:
-                return new Vector3(i * (cellWidth + cellPadiding), 0f, 0f);
+                return new Vector3(cellWidth * (i / maxPerLine), -(cellHeight + cellPadiding) * (i % maxPerLine), 0f);
             case Arrangement.Vertical:
-                return new Vector3(0f, i * -(cellHeight + cellPadiding), 0f);
+                return new Vector3(cellWidth * (i % maxPerLine), -(cellHeight + cellPadiding) * (i / maxPerLine), 0f);
         }
         return Vector3.zero;
     }
@@ -178,13 +181,14 @@ public class UIScroller : MonoBehaviour
 
     private void UpdateTotalWidth()
     {
+        int lineCount = Mathf.CeilToInt((float)_dataCount / maxPerLine);
         switch (_movement)
         {
             case Arrangement.Horizontal:
-                _content.sizeDelta = new Vector2(cellWidth * _dataCount + cellPadiding * (_dataCount - 1), _content.sizeDelta.y);
+                _content.sizeDelta = new Vector2(cellWidth * lineCount + cellPadiding * (lineCount - 1), _content.sizeDelta.y);
                 break;
             case Arrangement.Vertical:
-                _content.sizeDelta = new Vector2(_content.sizeDelta.x, cellHeight * _dataCount + cellPadiding * (_dataCount - 1));
+                _content.sizeDelta = new Vector2(_content.sizeDelta.x, cellHeight * lineCount + cellPadiding * (lineCount - 1));
                 break;
         }
     }

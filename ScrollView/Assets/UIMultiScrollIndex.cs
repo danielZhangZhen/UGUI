@@ -6,14 +6,14 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIScrollIndex : MonoBehaviour
+public class UIMultiScrollIndex : MonoBehaviour
 {
     public Text _textIndex;
     public Text _textOld;
     public Button _buttonAdd;
     public Button _buttonDel;
 
-    private UIScroller _scroller;
+    private UIMultiScroller _scroller;
     private int _index;
 
     void Awake()
@@ -51,7 +51,7 @@ public class UIScrollIndex : MonoBehaviour
         }
     }
 
-    public UIScroller Scroller
+    public UIMultiScroller Scroller
     {
         set { _scroller = value; }
     }
