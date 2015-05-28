@@ -35,7 +35,8 @@ public class BagWin : MonoBase
     {
         _newItemList = new List<BagItem>();
         CreateItemGrid(0);
-        UpdateAllItem();
+        _bagType = 0;
+        UpdateBagData(_bagType, -1);
     }
 
     private void OnValueChange(int index, bool value)
@@ -98,7 +99,7 @@ public class BagWin : MonoBase
                 tween.SetDelay((delay + 5) * 0.02f);
             }
             _bagType = index;
-            UpdateAllItem();
+            UpdateBagData(_bagType, -1);
         }
     }
 
@@ -127,18 +128,6 @@ public class BagWin : MonoBase
     }
 
     /// <summary>
-    /// 更新所有的Item
-    /// </summary>
-    public void UpdateAllItem()
-    {
-        Dictionary<int, DataItem> dataDict = GameData.BagData.GetItemDictByBagType(_bagType);
-        for (int i = 0; i < 30; i++)
-        {
-            _newItemList[i].SetInfo(_bagType, i, dataDict.ContainsKey(i) ? dataDict[i] : null);
-        }
-    }
-
-    /// <summary>
     /// 实例化一整页的Item
     /// </summary>
     /// <param name="offset">偏移[-300:前一页][0:当前][300:后一页]</param>
@@ -163,12 +152,27 @@ public class BagWin : MonoBase
     /// 更新指定BagType和Index的Item
     /// </summary>
     /// <param name="bagType">背包类型[0:消耗][1:材料][2:装备]</param>
-    /// <param name="index">索引[0~29:Index]</param>
+    /// <param name="index">索引[-1:所有][0~29:Index]</param>
     public void UpdateBagData(int bagType, int index)
     {
         if (bagType != _bagType) return;
         Dictionary<int, DataItem> dataDict = GameData.BagData.GetItemDictByBagType(_bagType);
-        _newItemList[index].SetInfo(_bagType, index, dataDict.ContainsKey(index) ? dataDict[index] : null);
+        if (index < 0)
+        {
+            for (int i = 0; i < 30; i++)
+            {
+                _newItemList[i].SetInfo(_bagType, i, dataDict.ContainsKey(i) ? dataDict[i] : null);
+            }
+        }
+        else
+        {
+            _newItemList[index].SetInfo(_bagType, index, dataDict.ContainsKey(index) ? dataDict[index] : null);
+        }
+    }
+
+    public void OnArrangeBag()
+    {
+        GameData.BagData.ArrangeBag(_bagType);
     }
 
     /// <summary>

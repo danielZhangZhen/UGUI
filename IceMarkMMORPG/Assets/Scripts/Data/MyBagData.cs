@@ -4,6 +4,7 @@
 //转载请说明出处
 //-------------------------------
 using System.Collections.Generic;
+using UnityEngine;
 
 public class MyBagData
 {
@@ -18,19 +19,20 @@ public class MyBagData
         //呃，这里只是手动把每个背包里面的数据加进来
         //实际项目中肯定是通过与服务端通信获取
         _consumableDict = new Dictionary<int, DataItem>();
-        _consumableDict.Add(0, new DataItem(10001));
-        _consumableDict.Add(1, new DataItem(10002));
-        _consumableDict.Add(2, new DataItem(10003));
+        _consumableDict.Add(0, new DataItem(10001, 77));
+        _consumableDict.Add(1, new DataItem(10002, 2));
+        _consumableDict.Add(2, new DataItem(10003, 3));
+        _consumableDict.Add(4, new DataItem(10001, 63));
 
         _materialDict = new Dictionary<int, DataItem>();
-        _materialDict.Add(0, new DataItem(20001));
-        _materialDict.Add(1, new DataItem(20002));
-        _materialDict.Add(2, new DataItem(20003));
+        _materialDict.Add(0, new DataItem(20001, 4));
+        _materialDict.Add(1, new DataItem(20002, 5));
+        _materialDict.Add(2, new DataItem(20003, 6));
 
         _equipmentDict = new Dictionary<int, DataItem>();
-        _equipmentDict.Add(0, new DataItem(30001));
-        _equipmentDict.Add(1, new DataItem(30002));
-        _equipmentDict.Add(2, new DataItem(30003));
+        _equipmentDict.Add(0, new DataItem(30001, 7));
+        _equipmentDict.Add(1, new DataItem(30002, 8));
+        _equipmentDict.Add(2, new DataItem(30003, 9));
     }
 
     /// <summary>
@@ -48,9 +50,28 @@ public class MyBagData
             //目标Item存在，交换数据
             if (itemDict.ContainsKey(indexTo))
             {
-                DataItem temp = itemDict[indexFrom];
-                itemDict[indexFrom] = itemDict[indexTo];
-                itemDict[indexTo] = temp;
+                //ID相同的话合并Item
+                if (itemDict[indexFrom].Id == itemDict[indexTo].Id)
+                {
+                    int countFrom = itemDict[indexFrom].Count;
+                    int countTo = itemDict[indexTo].Count;
+                    if (countFrom + countTo <= 99)
+                    {
+                        itemDict[indexFrom].AddCount(countTo);
+                        itemDict.Remove(indexTo);
+                    }
+                    else
+                    {
+                        itemDict[indexFrom] = new DataItem(itemDict[indexTo].Id, countFrom + countTo - BaseConfig.maxItemCount);
+                        itemDict[indexTo] = new DataItem(itemDict[indexFrom].Id, BaseConfig.maxItemCount);
+                    }
+                }
+                else
+                {
+                    DataItem temp = itemDict[indexFrom];
+                    itemDict[indexFrom] = itemDict[indexTo];
+                    itemDict[indexTo] = temp;
+                }
             }
             else    //否则就移动数据
             {
@@ -77,5 +98,97 @@ public class MyBagData
             case 2: return _equipmentDict;
         }
         return null;
+    }
+
+    /// <summary>
+    /// 获取指定背包类型的空格子
+    /// </summary>
+    /// <param name="bagType"></param>
+    /// <returns></returns>
+    public int GetEmptyIndex(int bagType)
+    {
+        Dictionary<int, DataItem> itemDict = GetItemDictByBagType(bagType);
+        for (int i = 0; i < 30; i++)
+        {
+            if (!itemDict.ContainsKey(i)) return i;
+        }
+        return -1;
+    }
+
+    /// <summary>
+    /// 往背包内添加Item
+    /// </summary>
+    /// <param name="id">ID</param>
+    /// <param name="count">数量</param>
+    public void AddItemToBag(int id, int count)
+    {
+        if (GameConfig.items.ContainsKey(id))
+        {
+            int bagType = GameConfig.items[id].bagType;
+            Dictionary<int, DataItem> itemDict = GetItemDictByBagType(bagType);
+            int index = GetEmptyIndex(bagType);
+            if (index > 0)
+            {
+                itemDict.Add(index, new DataItem(id, count));
+                if (OnUpdateBagData != null) OnUpdateBagData(bagType, index);
+            }
+            else
+            {
+                Debug.LogError("背包已满");
+            }
+        }
+        else
+        {
+            Debug.LogError("ID不存在");
+        }
+    }
+
+    /// <summary>
+    /// 整理背包
+    /// </summary>
+    /// <param name="bagType"></param>
+    public void ArrangeBag(int bagType)
+    {
+        Dictionary<int, DataItem> itemDict = GetItemDictByBagType(bagType);
+        Dictionary<int, DataItem> dict = new Dictionary<int, DataItem>();
+        //根据ID合并掉相同的Item
+        foreach (DataItem item in itemDict.Values)
+        {
+            if (dict.ContainsKey(item.Id))
+            {
+                dict[item.Id].AddCount(item.Count);
+            }
+            else
+            {
+                dict.Add(item.Id, item);
+            }
+        }
+        //将Dict转换成List并排序
+        List<DataItem> list = new List<DataItem>();
+        foreach (DataItem item in dict.Values)
+        {
+            if (item.Count > BaseConfig.maxItemCount)
+            {
+                int groupCount = item.Count / BaseConfig.maxItemCount;
+                int surplusCount = item.Count % BaseConfig.maxItemCount;
+                for (int i = 0; i < groupCount; i++)
+                {
+                    list.Add(new DataItem(item.Id, BaseConfig.maxItemCount));
+                }
+                list.Add(new DataItem(item.Id, surplusCount));
+            }
+            else
+            {
+                list.Add(item);
+            }
+        }
+        list.Sort();
+
+        itemDict.Clear();
+        for (int i = 0; i < list.Count; i++)
+        {
+            itemDict.Add(i, list[i]);
+        }
+        if (OnUpdateBagData != null) OnUpdateBagData(bagType, -1);//-1表示更新所有Item
     }
 }

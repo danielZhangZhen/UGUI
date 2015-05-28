@@ -11,6 +11,8 @@ public class MainWin : MonoBase
 {
     private MainController _controller;
 
+    public InputField inputField;
+
     void Start()
     {
     }
@@ -22,6 +24,27 @@ public class MainWin : MonoBase
             case "Bag":
                 WindowManager.GetInstance().OpenWindow(Window.BagWin);
                 break;
+        }
+    }
+
+    public void OnGMCommand(string msg)
+    {
+        if (msg.StartsWith("item"))
+        {
+            string[] arr = msg.Split(' ');
+            int id, count;
+            if (arr.Length == 3 && int.TryParse(arr[1], out id) && int.TryParse(arr[2], out count))
+            {
+                GameData.BagData.AddItemToBag(id, count);
+            }
+            else
+            {
+                Debug.LogError("格式错误，应为：item ID 数量");
+            }
+        }
+        else
+        {
+            Debug.LogError("格式错误，应为：item ID 数量");
         }
     }
 

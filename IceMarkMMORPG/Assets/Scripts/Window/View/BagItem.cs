@@ -9,7 +9,8 @@ using UnityEngine.UI;
 
 public class BagItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
-    public Image _iconSprite;
+    public Image iconSprite;
+    public Text textCount;
     public bool dragOnSurfaces = true;
 
     private int _bagType;
@@ -22,9 +23,11 @@ public class BagItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
     {
         _bagType = bagType;
         _index = index;
-        _iconSprite.gameObject.SetActive(item != null);
+        iconSprite.gameObject.SetActive(item != null);
+        textCount.gameObject.SetActive(item != null);
         if (item == null) return;
-        IconTools.SetIcon(_iconSprite, item.Icon);
+        IconTools.SetIcon(iconSprite, item.Icon);
+        textCount.text = item.Count.ToString();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -43,7 +46,7 @@ public class BagItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
         // The icon will be under the cursor.
         // We want it to be ignored by the event system.
         m_DraggingIcon.AddComponent<IgnoreRaycast>();
-        image.sprite = _iconSprite.sprite;
+        image.sprite = iconSprite.sprite;
         //image.SetNativeSize();
         image.rectTransform.sizeDelta = new Vector2(54f, 54f);
 
@@ -102,7 +105,7 @@ public class BagItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
         return comp;
     }
 
-    public bool hasData { get { return _iconSprite.gameObject.activeInHierarchy; } }
+    public bool hasData { get { return iconSprite.gameObject.activeInHierarchy; } }
 
     public int BagType { get { return _bagType; } }
 
