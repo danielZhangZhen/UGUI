@@ -26,9 +26,12 @@ public class UIScroller : MonoBehaviour
     private List<UIScrollIndex> _itemList;
     private int _dataCount;
 
+    private Queue<UIScrollIndex> _unUsedQueue;  //将未显示出来的Item存入未使用队列里面，等待需要使用的时候直接取出
+
     void Start()
     {
         _itemList = new List<UIScrollIndex>();
+        _unUsedQueue = new Queue<UIScrollIndex>();
         DataCount = 100;
         OnValueChange(Vector2.zero);
     }
@@ -44,8 +47,9 @@ public class UIScroller : MonoBehaviour
                 UIScrollIndex item = _itemList[i - 1];
                 if (item.Index < index || (item.Index >= index + viewCount))
                 {
-                    GameObject.Destroy(item.gameObject);
+                    //GameObject.Destroy(item.gameObject);
                     _itemList.Remove(item);
+                    _unUsedQueue.Enqueue(item);
                 }
             }
             for (int i = _index; i < _index + viewCount; i++)
@@ -134,9 +138,16 @@ public class UIScroller : MonoBehaviour
 
     private void CreateItem(int index)
     {
-        GameObject go = GameTools.AddChild(_content, itemPrefab);
+        UIScrollIndex itemBase;
+        if (_unUsedQueue.Count > 0)
+        {
+            itemBase = _unUsedQueue.Dequeue();
+        }
+        else
+        {
+            itemBase = GameTools.AddChild(_content, itemPrefab).GetComponent<UIScrollIndex>();
+        }
 
-        UIScrollIndex itemBase = go.GetComponent<UIScrollIndex>();
         itemBase.Scroller = this;
         itemBase.Index = index;
         _itemList.Add(itemBase);

@@ -29,9 +29,12 @@ public class UIMultiScroller : MonoBehaviour
     private List<UIMultiScrollIndex> _itemList;
     private int _dataCount;
 
+    private Queue<UIMultiScrollIndex> _unUsedQueue;  //将未显示出来的Item存入未使用队列里面，等待需要使用的时候直接取出
+
     void Start()
     {
         _itemList = new List<UIMultiScrollIndex>();
+        _unUsedQueue = new Queue<UIMultiScrollIndex>();
         DataCount = 200;
         OnValueChange(Vector2.zero);
     }
@@ -47,8 +50,9 @@ public class UIMultiScroller : MonoBehaviour
                 UIMultiScrollIndex item = _itemList[i - 1];
                 if (item.Index < index * maxPerLine || (item.Index >= (index + viewCount) * maxPerLine))
                 {
-                    GameObject.Destroy(item.gameObject);
+                    //GameObject.Destroy(item.gameObject);
                     _itemList.Remove(item);
+                    _unUsedQueue.Enqueue(item);
                 }
             }
             for (int i = _index * maxPerLine; i < (_index + viewCount) * maxPerLine; i++)
@@ -137,9 +141,16 @@ public class UIMultiScroller : MonoBehaviour
 
     private void CreateItem(int index)
     {
-        GameObject go = GameTools.AddChild(_content, itemPrefab);
+        UIMultiScrollIndex itemBase;
+        if (_unUsedQueue.Count > 0)
+        {
+            itemBase = _unUsedQueue.Dequeue();
+        }
+        else
+        {
+            itemBase = GameTools.AddChild(_content, itemPrefab).GetComponent<UIMultiScrollIndex>();
+        }
 
-        UIMultiScrollIndex itemBase = go.GetComponent<UIMultiScrollIndex>();
         itemBase.Scroller = this;
         itemBase.Index = index;
         _itemList.Add(itemBase);
