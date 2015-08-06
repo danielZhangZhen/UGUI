@@ -1,0 +1,1 @@
+这个Demo是在Unity4.6.6版本上制作的，如果在Unity5.X上打开ItemTips场景发现是空场景，就把ItemTips.prefab拖到场景上就可以运行了
