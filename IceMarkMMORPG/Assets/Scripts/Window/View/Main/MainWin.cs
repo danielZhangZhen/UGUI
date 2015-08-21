@@ -9,12 +9,11 @@ using UnityEngine;
 
 public class MainWin : MonoBase
 {
-    private MainController _controller;
-
-    public InputField inputField;
+    //private MainController _controller;
 
     void Start()
     {
+
     }
 
     public void OnMenuBarClick(string name)
@@ -23,6 +22,9 @@ public class MainWin : MonoBase
         {
             case "Bag":
                 WindowManager.GetInstance().OpenWindow(Window.BagWin);
+                break;
+            case "Shop":
+                WindowManager.GetInstance().OpenWindow(Window.ShopWin);
                 break;
         }
     }
@@ -48,8 +50,5 @@ public class MainWin : MonoBase
         }
     }
 
-    public MainController Controller
-    {
-        set { _controller = value; }
-    }
+    //public MainController Controller { set { _controller = value; } }
 }

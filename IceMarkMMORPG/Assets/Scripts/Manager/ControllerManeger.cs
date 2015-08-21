@@ -16,6 +16,7 @@ public class ControllerManager
 
         _components.Add(Window.MainWin, new MainController());
         _components.Add(Window.BagWin, new BagController());
+        _components.Add(Window.ShopWin, new ShopController());
     }
 
     public static ControllerBase GetControler(string name)

@@ -69,6 +69,7 @@ public class BagItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
     public void OnDrop(PointerEventData eventData)
     {
         BagItem itemFrom = eventData.pointerDrag.GetComponent<BagItem>();
+        if (itemFrom == null) return;
         if (!itemFrom.hasData || itemFrom.BagType != _bagType) return;
         if (itemFrom.Index == _index) return;
         //告诉数据中心我们要拖动类型为_bagType的背包，从itemFrom.Index拖动到_index

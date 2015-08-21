@@ -10,24 +10,26 @@ using DG.Tweening;
 
 public class BagWin : MonoBase
 {
-    private BagController _controller;
+    //private BagController _controller;
 
     public Transform itemPanel;
     public GameObject itemPrefab;
     public List<Toggle> _toggleList;
+    public Text _textWeight;
 
     private List<BagItem> _newItemList;
     private List<BagItem> _oldItemList;
     private int _bagType;               //当前的背包类型[0:消耗][1:材料][2:装备]
     private bool _isPlaying = false;    //标记是否正在播放缓动动画
 
-    void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         for (int i = 0; i < 3; i++)
         {
             Toggle toggle = _toggleList[i];
             int index = i;
-            _toggleList[i].onValueChanged.AddListener(delegate(bool value) { OnValueChange(index, value); });
+            toggle.onValueChanged.AddListener(delegate(bool value) { OnValueChange(index, value); });
         }
     }
 
@@ -81,6 +83,7 @@ public class BagWin : MonoBase
                 //这里的i % 5的取值始终是[0,1,2,3,4]里面的2f就是这里取值的中间值：2
                 //num其实就是+1和-1，
                 float delay = (i % 5) * num + (1 - num) * 2f;
+                //Debug.LogError(delay);
                 //乘以0.02f就是减少每一排的切换间隔
                 tween.SetDelay(delay * 0.02f);
             }
@@ -155,6 +158,7 @@ public class BagWin : MonoBase
     /// <param name="index">索引[-1:所有][0~29:Index]</param>
     public void UpdateBagData(int bagType, int index)
     {
+        _textWeight.text = GameData.BagData.NowWeight + "/" + GameData.BagData.MaxWeight;
         if (bagType != _bagType) return;
         Dictionary<int, DataItem> dataDict = GameData.BagData.GetItemDictByBagType(_bagType);
         if (index < 0)
@@ -183,5 +187,5 @@ public class BagWin : MonoBase
         WindowManager.GetInstance().CloseWindow(Window.BagWin);
     }
 
-    public BagController Controller { set { _controller = value; } }
+    //public BagController Controller { set { _controller = value; } }
 }

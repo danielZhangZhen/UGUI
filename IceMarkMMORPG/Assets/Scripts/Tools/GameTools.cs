@@ -39,7 +39,7 @@ public static class GameTools
                 if (obj is GameObject)
                 {
                     GameObject go = obj as GameObject;
-                    go.transform.parent = null;
+                    go.transform.SetParent(null);
                 }
 
                 UnityEngine.Object.Destroy(obj);

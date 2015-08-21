@@ -1,6 +1,6 @@
 ﻿public class MainController : ControllerBase
 {
-    private MainWin _win;
+    //private MainWin _win;
 
     public MainController()
     {
@@ -10,12 +10,13 @@
     override protected void Init()
     {
         base.Init();
-        _win = _mono as MainWin;
-        _win.Controller = this;
+        //_win = _mono as MainWin;
+        //_win.Controller = this;
     }
 
     override public void Destroy()
     {
+        //_win.Controller = this;
         base.Destroy();
     }
 }

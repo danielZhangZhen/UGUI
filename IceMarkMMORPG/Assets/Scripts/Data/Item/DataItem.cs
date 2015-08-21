@@ -1,9 +1,14 @@
-﻿using System;
-//这里为了贪图方便，省略了一部分数据，比如标志唯一性的Sid
+﻿//-------------------------------
+//该Demo由风冻冰痕所写
+//http://icemark.cn/blog
+//转载请说明出处
+//-------------------------------
+using System;
 using UnityEngine;
 
 public class DataItem : IComparable
 {
+    //这里为了贪图方便，省略了一部分数据，比如标志唯一性的Sid
     private _unit_of_items _data;
     private int _id;
     private int _count;
@@ -18,6 +23,10 @@ public class DataItem : IComparable
         _id = id;
         _count = count;
         _data = GameConfig.items[id];
+        for (int i = 0; i < 15; i++)
+        {
+
+        }
     }
 
     public int CompareTo(object obj)
@@ -43,4 +52,6 @@ public class DataItem : IComparable
     public int Type { get { return _data.type; } }
 
     public int Count { get { return _count; } }
+
+    public int Weight { get { return _data.weight; } }
 }

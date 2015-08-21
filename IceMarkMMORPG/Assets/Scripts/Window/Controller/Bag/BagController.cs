@@ -11,7 +11,7 @@
     {
         base.Init();
         _win = _mono as BagWin;
-        _win.Controller = this;
+        //_win.Controller = this;
         GameData.BagData.OnUpdateBagData += UpdateBagData;
     }
 
@@ -24,7 +24,7 @@
     {
         GameData.BagData.OnUpdateBagData -= UpdateBagData;
         base.Destroy();
-        _win.Controller = null;
+        //_win.Controller = null;
         _win = null;
     }
 }

@@ -1,4 +1,5 @@
-﻿//-------------------------------
+﻿using System;
+//-------------------------------
 //该Demo由风冻冰痕所写
 //http://icemark.cn/blog
 //转载请说明出处
@@ -10,29 +11,57 @@ public class MyBagData
 {
     public DataEvent.UpdateBagData OnUpdateBagData;
 
-    private Dictionary<int, DataItem> _consumableDict;
-    private Dictionary<int, DataItem> _materialDict;
-    private Dictionary<int, DataItem> _equipmentDict;
+    private Dictionary<int, DataItem> _consumableDict;  //key为格子索引，value为物品信息
+    private Dictionary<int, DataItem> _materialDict;    //key为格子索引，value为物品信息
+    private Dictionary<int, DataItem> _equipmentDict;   //key为格子索引，value为物品信息
+
+    /*
+    物品数量，之所以单独用一个Dictionary存数量是因为在
+    项目中会经常需要用到数量比如物品合成判断数量是否足
+    够，背包重量显示，不可能每次都去遍历整个背包
+    */
+    private Dictionary<int, int> _countDict;            //key为id，value为数量
+    /*
+    记录负重量的作用：
+    1.背包显示
+    2.负重超过一定百分比就不能再添加新东西（未实现）
+    3.负重影响玩家的行动
+    */
+    private int _nowWeight;             //当前的负重量
+    private int _maxWeight = 999;       //最大的负重量
 
     public MyBagData()
     {
-        //呃，这里只是手动把每个背包里面的数据加进来
-        //实际项目中肯定是通过与服务端通信获取
+        _countDict = new Dictionary<int, int>();
+        /*
+        呃，这里只是手动把每个背包里面的数据加进来
+        实际项目中肯定是通过与服务端通信获取
+        */
         _consumableDict = new Dictionary<int, DataItem>();
         _consumableDict.Add(0, new DataItem(10001, 77));
+        UpdateItemCount(10001, 77);
         _consumableDict.Add(1, new DataItem(10002, 2));
+        UpdateItemCount(10002, 2);
         _consumableDict.Add(2, new DataItem(10003, 3));
+        UpdateItemCount(10003, 3);
         _consumableDict.Add(4, new DataItem(10001, 63));
+        UpdateItemCount(10001, 63);
 
         _materialDict = new Dictionary<int, DataItem>();
         _materialDict.Add(0, new DataItem(20001, 4));
+        UpdateItemCount(20001, 4);
         _materialDict.Add(1, new DataItem(20002, 5));
+        UpdateItemCount(20002, 5);
         _materialDict.Add(2, new DataItem(20003, 6));
+        UpdateItemCount(20003, 6);
 
         _equipmentDict = new Dictionary<int, DataItem>();
         _equipmentDict.Add(0, new DataItem(30001, 7));
+        UpdateItemCount(30001, 7);
         _equipmentDict.Add(1, new DataItem(30002, 8));
+        UpdateItemCount(30002, 8);
         _equipmentDict.Add(2, new DataItem(30003, 9));
+        UpdateItemCount(30003, 9);
     }
 
     /// <summary>
@@ -130,6 +159,7 @@ public class MyBagData
             if (index > 0)
             {
                 itemDict.Add(index, new DataItem(id, count));
+                UpdateItemCount(id, count);
                 if (OnUpdateBagData != null) OnUpdateBagData(bagType, index);
             }
             else
@@ -191,4 +221,29 @@ public class MyBagData
         }
         if (OnUpdateBagData != null) OnUpdateBagData(bagType, -1);//-1表示更新所有Item
     }
+
+    /// <summary>
+    /// 在对物品进行增删操作的时候更新保存数量的Dictionary
+    /// </summary>
+    /// <param name="id">物品ID</param>
+    /// <param name="count">改变的数量，为正则加，为负则减</param>
+    private void UpdateItemCount(int id, int count)
+    {
+        _nowWeight += (count * GameConfig.items[id].weight);
+        if (_countDict.ContainsKey(id))
+        {
+            _countDict[id] += count;
+        }
+        else
+        {
+            _countDict.Add(id, count);
+        }
+        if (_countDict[id] < 0) throw new Exception("物品数量异常 ID:" + id);
+    }
+
+    public Dictionary<int, int> CountDict { get { return _countDict; } }
+
+    public int NowWeight { get { return _nowWeight; } }
+
+    public int MaxWeight { get { return _maxWeight; } }
 }
